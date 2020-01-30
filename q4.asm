@@ -403,7 +403,7 @@ code segment
         mov ah, 9
         int 21h   ;error
         
-        jmp fin12
+        jmp finl2
         
         finloop7:
         mov dl, 13
