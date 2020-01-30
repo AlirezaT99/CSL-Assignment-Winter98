@@ -6,13 +6,14 @@
 data segment
     ; add your data here!
     pkey db "choose your option from 1 to 6 with write parameters : $"
-    filled db 1000 dup(0)
-    nums dw 1000 dup(?)
-    nexts dw 1000 dup(-1)
-    pres dw 1000 dup(-1)
-    first dw -1
-    last dw -1
-    num dw ?
+    nkey db "not found :( $"
+    filled db 1000 dup(0)   ;check that is full or not if 1 mean full
+    nums dw 1000 dup(?)     ;hold nums
+    nexts dw 1000 dup(-1)   ;hold next
+    pres dw 1000 dup(-1)    ;hold previos
+    first dw -1             ;holf first of link list
+    last dw -1              ;hold last of link list
+    num dw ?                ;hold input number
     
 ends
 
@@ -91,36 +92,36 @@ code segment
         dec ax
         mov bx, 2
         mul bx
-        mov bx, ax
+        mov bx, ax   ;prepare adrres loop counter must add -1 and mul 2
         mov ax, word ptr filled+[bx]
-        cmp ax, 0
-        je finloop1
+        cmp ax, 0    ; check house is empty or not
+        je finloop1  ;if it is empty it is okay
         loop l2
 
         
         
         finloop1: 
-        call load
+        call load  ;load number
         mov ax, num
-        mov word ptr filled+[bx], 1
-        mov nums+[bx], ax
+        mov word ptr filled+[bx], 1 ;mark house as full
+        mov nums+[bx], ax       ;set it num
         mov ax, first
-        cmp ax, -1
+        cmp ax, -1       ;check if link list is empty
         je jf
         
         mov nexts+[bx] , ax
         mov si, ax
-        mov pres+[si], bx
+        mov pres+[si], bx    ;set next and pre for adding bx is new input and ax is first
         jmp jf
         
-        jf:
+        jf:    ;if list is empty we must mark this house as start
         mov first, bx
         
         
         mov ax, last
         cmp ax, -1
         jne fin2
-        mov last, bx
+        mov last, bx     ;if last is empty it must be set
         
         
         
@@ -130,7 +131,7 @@ code segment
         int 21h
         mov dl, 10
         mov ah, 2
-        int 21h
+        int 21h        ;new line
         
         
         pop dx
@@ -153,26 +154,25 @@ code segment
         dec ax
         mov bx, 2
         mul bx
-        mov bx, ax
+        mov bx, ax     ;prepare adrres loop counter must add -1 and mul 2
         mov ax, word ptr filled+[bx]
-        cmp ax, 0
-        je finloop2
-        loop l4
-
+        cmp ax, 0      ; check house is empty or not
+        je finloop2    ;if it is empty it is okay
+        loop l4        
         
         
         finloop2: 
-        call load
+        call load      ;load number
         mov ax, num
-        mov word ptr filled+[bx], 1
-        mov nums+[bx], ax
+        mov word ptr filled+[bx], 1   ;mark house as full
+        mov nums+[bx], ax     ;set it num
         mov ax, last
-        cmp ax, -1
+        cmp ax, -1      ;check if link list is empty
         je jf2
         
         mov pres+[bx] , ax
         mov si, ax
-        mov nexts+[si], bx
+        mov nexts+[si], bx    ;set next and pre for adding bx is new input and ax is first
         jmp jf2
         
         jf2:
@@ -182,7 +182,7 @@ code segment
         mov ax, first
         cmp ax, -1
         jne fin4
-        mov first, bx
+        mov first, bx      ;if first is empty it must be set
         
         
         
@@ -192,7 +192,7 @@ code segment
         int 21h
         mov dl, 10
         mov ah, 2
-        int 21h
+        int 21h    ;new line
         
         pop dx
         pop cx
@@ -211,6 +211,72 @@ code segment
         push dx
         
         
+        call load      ;load number
+        mov cx, 500
+        l6:
+        mov ax, cx
+        dec ax
+        mov bx, 2
+        mul bx
+        mov bx, ax     ;prepare adrres loop counter must add -1 and mul 2
+        mov ax, word ptr filled+[bx]
+        cmp ax, 0        ; check house is empty or not
+        je finloop6      ;if it is empty it is okay
+        loop l6
+        
+        
+        
+        finloop6:
+        mov si, bx
+        mov filled+[si], 1  ;mark house as full
+        mov ax, num
+        mov nums+[si], ax    ;set it num
+                             
+        call load    ;load number that must insert after
+        mov bx, first
+        l5:
+        cmp bx, -1
+        je fin51        ;it means it does not exist
+        mov ax, nums+[bx]
+        cmp ax, word ptr num
+        je finloop5
+        mov bx, nexts+[bx]  ;find it by start from first and compare it and go next until find
+        jmp l5
+        
+        finloop5:
+        mov pres+[si], bx
+        mov ax, nexts+[bx]
+        mov nexts+[si], ax
+        mov ax, si
+        mov nexts[bx], ax  ;set pre and next bx is elemt must add after and ax is the num must be added
+        
+        cmp last, bx
+        jne finl
+        mov last, si ;if the element is last ,lasst must be changed
+        jmp finl
+        
+        fin51:
+        mov dl, 13
+        mov ah, 2
+        int 21h
+        mov dl, 10
+        mov ah, 2
+        int 21h     ;new line
+        
+        lea dx, nkey
+        mov ah, 9
+        int 21h     ; print does not exist
+        
+        
+        
+        finl:
+        mov dl, 13
+        mov ah, 2
+        int 21h
+        mov dl, 10
+        mov ah, 2
+        int 21h     ;new line
+        
         
         pop dx
         pop cx
@@ -228,6 +294,70 @@ code segment
         push cx
         push dx
         
+        call load
+        sub cx, cx
+        mov bx, first
+        l8:
+        cmp bx, -1
+        je fin81   ;if do not find
+        inc cx
+        mov ax, nums+[bx]
+        cmp ax, word ptr num
+        je finloop8
+        mov bx, nexts+[bx]
+        jmp l8         ;find number
+        
+        
+        finloop8:
+        mov word ptr filled+[bx], 0
+        mov ax, pres+[bx]
+        mov bx, nexts+[bx]   ; mark it as empty
+        
+        cmp bx, -1
+        jne if2
+        cmp ax, -1
+        jne if11
+        mov last, ax
+        mov first, ax
+        jmp fin8   ;it is only element
+        
+        if11:
+        mov si, ax
+        mov nexts+[si], -1
+        jmp fin8   ;if it is last element
+        
+        if2:
+        cmp ax, -1
+        jne if22
+        mov first, bx
+        mov pres+[bx], -1
+        jmp fin8    ;it is first element
+        
+        if22:
+        mov si, ax
+        mov nexts+[si], bx
+        mov pres+[bx], ax
+        jmp fin8          ; it is in middle
+        
+        fin81:
+        mov dl, 13
+        mov ah, 2
+        int 21h
+        mov dl, 10
+        mov ah, 2
+        int 21h     ;new line
+        
+        lea dx, nkey
+        mov ah, 9
+        int 21h       ;error not exist
+        
+        fin8:
+        mov dl, 13
+        mov ah, 2
+        int 21h
+        mov dl, 10
+        mov ah, 2
+        int 21h    ;new line
         
         
         pop dx
@@ -246,6 +376,54 @@ code segment
         push cx
         push dx
         
+        
+        call load
+        sub cx, cx
+        mov bx, first
+        l7:
+        cmp bx, -1
+        je fin7
+        inc cx
+        mov ax, nums+[bx]
+        cmp ax, word ptr num
+        je finloop7
+        mov bx, nexts+[bx]
+        jmp l7      ;find it linke before and counting in meiddle
+        
+        
+        fin7:
+        mov dl, 13
+        mov ah, 2
+        int 21h
+        mov dl, 10
+        mov ah, 2
+        int 21h  ;new line
+        
+        lea dx, nkey
+        mov ah, 9
+        int 21h   ;error
+        
+        jmp fin12
+        
+        finloop7:
+        mov dl, 13
+        mov ah, 2
+        int 21h
+        mov dl, 10
+        mov ah, 2
+        int 21h  ;new line
+        
+        push cx
+        call print  ;print index
+        
+        
+        finl2:
+        mov dl, 13
+        mov ah, 2
+        int 21h
+        mov dl, 10
+        mov ah, 2
+        int 21h   ;new line
         
         
         pop dx
@@ -268,7 +446,7 @@ code segment
         int 21h
         mov dl, 10
         mov ah, 2
-        int 21h
+        int 21h    ;new line
         
         mov bx, first
         l3:
@@ -281,7 +459,7 @@ code segment
         mov dl, ' '
         mov ah, 2
         int 21h
-        jmp l3
+        jmp l3        ;itrate list and print them
         
         fin3:
         mov dl, 10
@@ -289,7 +467,7 @@ code segment
         int 21h
         mov dl, 13
         mov ah, 2
-        int 21h
+        int 21h   ;new line
         
         
         pop dx
