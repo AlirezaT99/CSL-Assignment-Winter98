@@ -24,7 +24,7 @@ OUTER:
       CMP DX, BX
       JLE ENDINNER
       MOV BX, DX            ; UPDATE RESULT
-      MOV result_idx, CX    ; = result_idx
+      MOV result_idx, CX
       ENDINNER:
         LOOP INNER 
     MOV CX, cx_holder  ; POP CX
@@ -85,15 +85,12 @@ STRLEN PROC
     RET
 STRLEN ENDP
 
-string      DB 'zerreb', 0
+string      DB 'anyyything', 0
 length      DW ?                      
 result_idx  DW 1
 cx_holder   DW ?                      
 flag        DB 0                      
 
-DEFINE_PRINT_NUM
-DEFINE_PRINT_NUM_UNS
-DEFINE_PRINT_STRING
 DEFINE_PTHIS
 
 END
