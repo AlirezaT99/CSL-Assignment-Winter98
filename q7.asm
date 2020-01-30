@@ -33,13 +33,13 @@ code segment
         mov bx, 10
         mov ax, word ptr [bp+10]  ;load int
         lo:  
-            cmp ax, 0   ;if it became 0 it is over
-            je fin
             sub dx, dx   ;use dx for reminder of divide
             div bx
             add dx, '0'     ;make int to char
             push dx         ;push it to stack
-            inc cx          ;use it for counter to print
+            inc cx          ;use it for counter to print 
+            cmp ax, 0   ;if it became 0 it is over
+            je fin
             jmp lo
         fin:
             pop ax          ;load first decimal
@@ -85,7 +85,7 @@ code segment
         cmp al, 'h'
         je gethop
         sub al, '0' ;change char to int
-        and ax, 0fh ;remove ah that is not our number
+        and ax, 00ffh ;remove ah that is not our number
         mov cx, ax  ;mov ax to add to bx later
         mov ax, bx
         mul dx      ;mul bx , 10 in ax
