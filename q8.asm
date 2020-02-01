@@ -7,9 +7,25 @@ MOV A, CL
 
 CALL PTHIS
 DB 10, 13, "the number: ", 0
-; SCAN STRING
+; SCAN input
+
+LEA BP, input
+MOV AH, 01h
+
+SCN:
+INT 21h
+CMP AL, 13
+JE NXT
+MOV [BP], AL
+INC BP
+JMP SCN
+
+NXT:
+INC BP
+MOV [BP], 0
 
 
+;
 CALL PTHIS
 DB 10, 13, "the new base: ", 0
 CALL SCAN_NUM
@@ -122,7 +138,7 @@ STRLEN ENDP
 A       DB ?                ; NUMBER'S BASE
 B       DB ?                ; NEW BASE
 LEN     DW ?
-INPUT   DB '1A', 0
+INPUT   DB 10 DUP(?)
 OUTPUT  DB 10 DUP(?)
 
 DEFINE_SCAN_NUM
