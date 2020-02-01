@@ -237,7 +237,14 @@ MOV BP, [BP + 2]    ; = i
 MOV AX, 0
 MOV AL, A
 ADD BP, AX          ; = j = i+a
-
+;
+MOV CX, BP
+PUSH AX
+MOV AH, 0
+MOV AL, BYTE PTR N
+MOV BP, AX
+POP AX 
+;
 
 MOV DI, OFFSET INPUT
 MOV SI, DI
@@ -246,22 +253,22 @@ MOV AL, 0
 ADD AL, B
 CMP AL, A
 JG  OK     
+DEC BP          ; TOF
 MOV AH, 0FFh    ; negative amount stored correctly
 
 OK:
+MOV AH, 0
 SUB AL, A
 ADD DI, AX      ; DI = INPUT[B - A]
 
-MOV AH, 0
 
 L1:             ; SHIFTS CHARACTERS AFTER REPLACEMENT INDEX ACCORDINGLY
     MOV AL, BYTE PTR [SI + BP] 
     MOV [DI + BP], AL
     
-    MOV AL, N
-    INC BP
-    CMP BP, AX
-    JLE L1
+    DEC BP
+    CMP BP, CX
+    JGE L1
 
 MOV BP, SP
 MOV BP, [BP + 2]    ; = i
