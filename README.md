@@ -1,3 +1,2 @@
-# CSL-Assignment-Winter98-
-Khodaya Basse dige
+# CSL-Assignment-Winter98
 Mano Mammad.. Shoma Hame.. :|
