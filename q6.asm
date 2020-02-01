@@ -15,6 +15,8 @@ data segment
     num dw ?
     tempX dw ?
     tempY dw ?
+    tempcount dw 1000 
+    erortemp dw 0
 ends
 
 stack segment
@@ -111,10 +113,18 @@ code segment
         dec ax
         mov bx, 2
         mul bx
-        mov ax, bx ; prepare index for address
+        mov bx, ax ; prepare index for address
         
         push bx
         call loadDot  ; dot
+        
+        mov dl, 10
+        mov ah, 2
+        int 21h
+        mov dl, 13
+        mov ah, 2
+        int 21h   ;new line
+    
         loop l3
         
         pop dx
@@ -134,17 +144,21 @@ code segment
         mov bp, sp
         mov bx, [bp+10]
         
-        call load
-        mov ax, num
-        mov xDot, ax  ; x
+        lea dx, dot
+        mov ah, 9
+        int 21h 
         
         call load
         mov ax, num
-        mov yDot, ax  ; y
+        mov xDots+[bx], ax  ; x
         
         call load
         mov ax, num
-        mov flagDot, ax  ; flag
+        mov yDots+[bx], ax  ; y
+        
+        call load
+        mov ax, num
+        mov flagDots+[bx], ax  ; flag
         
         
         pop dx
@@ -170,18 +184,19 @@ code segment
         mov ax, cx
         dec ax
         mov bx, 2
-        mul bx
+        mul bl
         mov bx, ax ; prepare index
         
         mov ax, xDots+[bx]
         cmp ax, word ptr tempX   ;compare dot with line
-        jg if1                   ;if its above it
-        cmp word ptr flag+[bx], 0  ;if it is below it must have flag 0
+        jg if1
+        je contloop                   ;if its above it
+        cmp word ptr flagDots+[bx], 0  ;if it is below it must have flag 0
         je contloop
         inc dx             ;it does not have flag 0
         jmp contloop
         if1:
-        cmp word ptr flag+[bx], 1 ;if it is above the line it must have flag 1
+        cmp word ptr flagDots+[bx], 1 ;if it is above the line it must have flag 1
         je contloop
         inc dx      ;it does not have flag 1
         contloop:
@@ -189,18 +204,19 @@ code segment
         
         mov ax, min
         cmp ax, dx     ;load min inversion to compare
-        jnl gol6       ;if it is higher it is not proper
+        jl gol6       ;if it is higher it is not proper
         mov min, dx    ;it is less than before so save it
         mov ax, tempX
         mov x, ax
         mov word ptr y, 0
-        gol6:
-        mov ax, tempX
-        cmp ax, 100          ;go until x is 100
+        gol6: 
+        cmp dx, word ptr tempcount          ;go until x is 100
         jg fin5
+        mov ax, tempX
         inc ax
-        mov tempX, ax       ;go to next line
-        jmp l6:
+        mov tempX, ax
+        mov tempcount, dx       ;go to next line
+        jmp l6
          
         
         
@@ -218,7 +234,10 @@ code segment
         push ax
         push bx
         push cx
-        push dx
+        push dx 
+        
+        mov ax, 1000
+        mov tempcount, ax
         
         l8:
         
@@ -229,18 +248,19 @@ code segment
         mov ax, cx
         dec ax
         mov bx, 2
-        mul bx
+        mul bl
         mov bx, ax ; prepare index
         
         mov ax, yDots+[bx]
         cmp ax, word ptr tempY   ;compare dot with line
-        jg if2                   ;if its above it
-        cmp word ptr flag+[bx], 0  ;if it is below it must have flag 0
+        jg if2
+        je contloop                   ;if its above it
+        cmp word ptr flagDots+[bx], 0  ;if it is below it must have flag 0
         je contloop2
         inc dx             ;it does not have flag 0
         jmp contloop2
         if2:
-        cmp word ptr flag+[bx], 1 ;if it is above the line it must have flag 1
+        cmp word ptr flagDots+[bx], 1 ;if it is above the line it must have flag 1
         je contloop2
         inc dx      ;it does not have flag 1
         contloop2:
@@ -248,18 +268,19 @@ code segment
         
         mov ax, min
         cmp ax, dx     ;load min inversion to compare
-        jnl gol8       ;if it is higher it is not proper
+        jl gol8       ;if it is higher it is not proper
         mov min, dx    ;it is less than before so save it
         mov ax, tempY
         mov y, ax
         mov word ptr x, 0
         gol8:
-        mov ax, tempY
-        cmp ax, 100          ;go until y is 100
+        cmp dx, tempcount          ;go until y is 100
         jg fin7
+        mov ax, tempY
         inc ax
-        mov tempY, ax       ;go to next line
-        jmp l8:
+        mov tempY, ax       ;go to next line 
+        mov tempcount, dx
+        jmp l8
          
         
         
@@ -282,9 +303,59 @@ code segment
         push cx
         push dx
         
+        mov tempcount, 1000
+        mov tempY, 1
+        mov tempX, 1   ;start quantities
+        
+        
+        l10:
+        mov word ptr erortemp, 0
+        mov dx, tempX     ;sheeb line
+        mov cx, count     ;loop counter
+        l9:
+        mov ax, cx
+        dec ax
+        mov bx, 2
+        mul bl
+        mov bx, ax;index of array
+        mov ax, xDots+[bx]
+        mul dl           ; expected y
+        cmp ax, yDots+[bx]
+        jg if21  ;it is less than line
+        cmp flagDots+[bx], 1   ; it is higher must have flag 1
+        je contloop4
+        inc erortemp
+        jmp contloop4
+        if21:
+        cmp flagDots+[bx], 0   ; it is lower must have flag 0
+        je contloop4
+        inc erortemp
+        jmp contloop4
+        contloop4:
+        loop l9
+        
+        mov ax, min
+        cmp ax, erortemp
+        jl gol10               ;compare now eror with min
+        mov ax, erortemp       
+        mov min, ax
+        mov ax, tempX
+        mov word ptr x, ax
+        mov ax, tempY
+        mov word ptr y, ax    ;if it is less save it
+        gol10:
+        mov ax, erortemp
+        cmp ax, tempcount    ; check if it is more than before we must quite
+        jg fin8 
+        mov tempcount, ax
+        inc tempx           ;next line
+        jmp l10 
+         
         
         
         
+        
+        fin8:
         pop dx
         pop cx
         pop bx
@@ -309,7 +380,15 @@ start:
     
     call load
     mov ax, num
-    mov count, ax
+    mov count, ax 
+    
+    mov dl, 10
+    mov ah, 2
+    int 21h
+    mov dl, 13
+    mov ah, 2
+    int 21h   ;new line
+    
     
     call loadDots
     
@@ -319,6 +398,54 @@ start:
     
     call checkXY
     
+    lea dx, line
+    mov ah, 9
+    int 21h
+    
+    cmp word ptr x, 0
+    je fin10
+    cmp word ptr y, 0
+    je fin11
+    mov dl, 'y'
+    mov ah, 2
+    int 21h
+    mov dl, '='
+    mov ah, 2
+    int 21h
+    mov ax, tempX
+    push ax
+    call print
+    mov dl, 'x'
+    mov ah, 2
+    int 21h
+    jmp fin12     ;linear
+    
+    fin10:
+    mov dl, 'x'
+    mov ah, 2
+    int 21h
+    mov dl, '='
+    mov ah, 2
+    int 21h
+    mov ax, tempX
+    push ax
+    call print
+    jmp fin12  ;x
+    
+    fin11:
+    mov dl, 'y'
+    mov ah, 2
+    int 21h
+    mov dl, '='
+    mov ah, 2
+    int 21h
+    mov ax, tempY
+    push ax
+    call print
+    jmp fin12  ;y
+    
+    
+    fin12:
     ; wait for any key....    
     mov ah, 1
     int 21h
