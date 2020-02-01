@@ -584,7 +584,10 @@ start:
     call menu
             
     
-    jmp l
+    jmp l 
+    
+    mov ah, 1
+    int 21h ;wait for a key
     
     mov ax, 4c00h ; exit to operating system.
     int 21h    

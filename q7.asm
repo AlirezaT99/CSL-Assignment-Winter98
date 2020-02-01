@@ -315,7 +315,11 @@ start:
         mov turn, ax   ;make turn go a step further
         
         cmp byte ptr flagcont, 1 ;check that code must continue or not
-        je l1    
+        je l1 
+        
+        
+    mov ah, 1
+    int 21h ;wait for a key   
         
     
     mov ax, 4c00h ; exit to operating system.

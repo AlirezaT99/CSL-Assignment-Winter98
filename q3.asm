@@ -195,7 +195,12 @@ start:
         loop ls1
         fin1:                  
             push ax
-            call print                  ;print result
+            call print                  ;print result 
+            
+            
+            
+    mov ah, 1
+    int 21h ;wait for a key
 
     
     mov ax, 4c00h ; exit to operating system.
