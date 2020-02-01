@@ -1,4 +1,24 @@
 include 'emu8086.inc'  
+
+; SCAN INPUT
+LEA BP, string
+MOV AH, 01h
+
+SCN:
+INT 21h
+CMP AL, 13
+JE NXT
+MOV [BP], AL
+INC BP
+JMP SCN
+
+NXT:
+INC BP
+MOV [BP], 0
+
+CALL PTHIS
+DB 10, 13, '', 0    ; BLANK LINE
+
    
 CALL STRLEN         ; DI HOLDS LENGTH OF INPUT NOW
 MOV length, DI
@@ -24,7 +44,7 @@ OUTER:
       CMP DX, BX
       JLE ENDINNER
       MOV BX, DX            ; UPDATE RESULT
-      MOV result_idx, CX
+      MOV result_idx, CX    ; = result_idx
       ENDINNER:
         LOOP INNER 
     MOV CX, cx_holder  ; POP CX
@@ -85,12 +105,15 @@ STRLEN PROC
     RET
 STRLEN ENDP
 
-string      DB 'anyyything', 0
+string      DB 100 dup(?)
 length      DW ?                      
 result_idx  DW 1
 cx_holder   DW ?                      
 flag        DB 0                      
 
+DEFINE_PRINT_NUM
+DEFINE_PRINT_NUM_UNS
+DEFINE_PRINT_STRING
 DEFINE_PTHIS
 
 END
