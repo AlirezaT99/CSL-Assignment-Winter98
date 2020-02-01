@@ -13,8 +13,8 @@ data segment
     x dw ?
     y dw ?
     num dw ?
-    tempX dw ?
-    tempY dw ?
+    tempX dw 0
+    tempY dw 0
     tempcount dw 1000 
     erortemp dw 0
 ends
@@ -188,9 +188,9 @@ code segment
         mov bx, ax ; prepare index
         
         mov ax, xDots+[bx]
-        cmp ax, word ptr tempX   ;compare dot with line
-        jg if1
-        je contloop                   ;if its above it
+        cmp ax, word ptr tempX   ;compare dot with line 
+        je contloop
+        jg if1                   ;if its above it
         cmp word ptr flagDots+[bx], 0  ;if it is below it must have flag 0
         je contloop
         inc dx             ;it does not have flag 0
@@ -210,7 +210,7 @@ code segment
         mov x, ax
         mov word ptr y, 0
         gol6: 
-        cmp dx, word ptr tempcount          ;go until x is 100
+        cmp dx, word ptr tempcount          ;go until eror is more than before
         jg fin5
         mov ax, tempX
         inc ax
@@ -238,6 +238,8 @@ code segment
         
         mov ax, 1000
         mov tempcount, ax
+        mov tempX, 0
+        mov tempY, 0
         
         l8:
         
@@ -252,9 +254,9 @@ code segment
         mov bx, ax ; prepare index
         
         mov ax, yDots+[bx]
-        cmp ax, word ptr tempY   ;compare dot with line
-        jg if2
-        je contloop                   ;if its above it
+        cmp ax, word ptr tempY   ;compare dot with line 
+        je contloop2
+        jg if2                   ;if its above it
         cmp word ptr flagDots+[bx], 0  ;if it is below it must have flag 0
         je contloop2
         inc dx             ;it does not have flag 0
@@ -274,7 +276,7 @@ code segment
         mov y, ax
         mov word ptr x, 0
         gol8:
-        cmp dx, tempcount          ;go until y is 100
+        cmp dx, tempcount          ;go until eror is more than before
         jg fin7
         mov ax, tempY
         inc ax
@@ -321,6 +323,7 @@ code segment
         mov ax, xDots+[bx]
         mul dl           ; expected y
         cmp ax, yDots+[bx]
+        je contloop4
         jg if21  ;it is less than line
         cmp flagDots+[bx], 1   ; it is higher must have flag 1
         je contloop4
@@ -412,7 +415,7 @@ start:
     mov dl, '='
     mov ah, 2
     int 21h
-    mov ax, tempX
+    mov ax, X
     push ax
     call print
     mov dl, 'x'
@@ -420,26 +423,26 @@ start:
     int 21h
     jmp fin12     ;linear
     
-    fin10:
+    fin11:
     mov dl, 'x'
     mov ah, 2
     int 21h
     mov dl, '='
     mov ah, 2
     int 21h
-    mov ax, tempX
+    mov ax, X
     push ax
     call print
     jmp fin12  ;x
     
-    fin11:
+    fin10:
     mov dl, 'y'
     mov ah, 2
     int 21h
     mov dl, '='
     mov ah, 2
     int 21h
-    mov ax, tempY
+    mov ax, Y
     push ax
     call print
     jmp fin12  ;y
